@@ -1,34 +1,32 @@
 /* eslint-disable no-underscore-dangle */
 import React from 'react';
 const adm = Symbol();
-export interface StoreObject{}
-class Administration{
+export interface StoreObject {}
+class Administration {
 	freshMethod: Set<React.Dispatch<React.SetStateAction<boolean>>> = new Set();
 	currentAmountOfProxy: number = 0;
-	constructor(
-		private target_:any
-	){}
-	addFresh(set: React.Dispatch<React.SetStateAction<boolean>>){
+	constructor(private target_: any) {}
+	addFresh(set: React.Dispatch<React.SetStateAction<boolean>>) {
 		this.freshMethod?.add(set);
 	}
-	doFresh(){
-		this.freshMethod?.forEach((v)=> v((value)=> !value));
+	doFresh() {
+		this.freshMethod?.forEach((v) => v((value) => !value));
 	}
-	addProxy(){
+	addProxy() {
 		++this.currentAmountOfProxy;
 	}
-	removeProxy(){
+	removeProxy() {
 		--this.currentAmountOfProxy;
 	}
-	get_(key: PropertyKey){
+	get_(key: PropertyKey) {
 		return this.target_[key];
 	}
 }
 
-export function getAdm(o: any): Administration{
+export function getAdm(o: any): Administration {
 	return o[adm];
 }
-export default function createStore(target: StoreObject){
+export default function createStore<T>(target: T) {
 	Object.defineProperty(target, adm, {
 		value: new Administration(target)
 	});

@@ -1,37 +1,38 @@
 import React from 'react';
 import { counter } from '../libs/store';
-import { createrRoot, useAutorun, useNormalStore, useRootStore } from '../libs/store-hooks';
+import {
+	createrRoot,
+	useAutorun,
+	useNormalStore,
+	useRootStore
+} from '../libs/store-hooks';
 const root = createrRoot(counter);
-export const Another = ()=>{
+export const Another = () => {
 	const counterStore = useNormalStore(root);
-	useAutorun(()=>console.log(counterStore.count));
-	return (
-		<span>
-			{counterStore.count}
-		</span>
-	);
+	//useAutorun(() => console.log(counterStore.count));
+	return <span>{counterStore.count}</span>;
 };
 const rootA = createrRoot(counter);
 export const A = () => {
 	const counterStore = useRootStore(rootA);
-	return (
-		<p>
-			{counterStore.count}
-		</p>
-	);
+	return <p>{counterStore.count}</p>;
 };
-export const Counter = (props:{render:Function})=>{
+export const Counter = (props: { render: Function }) => {
 	const counterStore = useRootStore(root);
-
+	useAutorun(() => {
+		console.log(counterStore.age);
+	});
 	return (
 		<div>
 			{counterStore.count}
-			<button onClick={()=>{
-				counterStore.count++;
-			}}>
+			<button
+				onClick={() => {
+					counterStore.count++;
+				}}
+			>
 				+
 			</button>
-			<Another/>
+			<Another />
 		</div>
 	);
 };
