@@ -1,15 +1,10 @@
-import React, { useEffect } from 'react';
+import React from 'react';
 import { counter } from '../libs/store';
-import { createrRoot, useNormalStore, useRootStore } from '../libs/store-hooks';
-
+import { createrRoot, useAutorun, useNormalStore, useRootStore } from '../libs/store-hooks';
 const root = createrRoot(counter);
 export const Another = ()=>{
 	const counterStore = useNormalStore(root);
-	useEffect(()=>{
-		return ()=>{
-			console.log('destroyed');
-		};
-	}, []);
+	useAutorun(()=>console.log(counterStore.count));
 	return (
 		<span>
 			{counterStore.count}
@@ -27,6 +22,7 @@ export const A = () => {
 };
 export const Counter = (props:{render:Function})=>{
 	const counterStore = useRootStore(root);
+
 	return (
 		<div>
 			{counterStore.count}

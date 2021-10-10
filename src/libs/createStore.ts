@@ -1,3 +1,4 @@
+/* eslint-disable no-underscore-dangle */
 import React from 'react';
 const adm = Symbol();
 export interface StoreObject{}
@@ -5,7 +6,7 @@ class Administration{
 	freshMethod: Set<React.Dispatch<React.SetStateAction<boolean>>> = new Set();
 	currentAmountOfProxy: number = 0;
 	constructor(
-		private target_:StoreObject
+		private target_:any
 	){}
 	addFresh(set: React.Dispatch<React.SetStateAction<boolean>>){
 		this.freshMethod?.add(set);
@@ -18,6 +19,9 @@ class Administration{
 	}
 	removeProxy(){
 		--this.currentAmountOfProxy;
+	}
+	get_(key: PropertyKey){
+		return this.target_[key];
 	}
 }
 
