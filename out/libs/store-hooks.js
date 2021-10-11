@@ -1,46 +1,39 @@
+/* eslint-disable no-unused-vars */
+/* eslint-disable react-hooks/exhaustive-deps */
 /* eslint-disable no-underscore-dangle */
 import { useEffect, useState } from 'react';
+import { autorun } from './autorun';
 import { getAdm } from './createStore';
-import { observableHandler } from './observable';
-var globalStateHandler = {
-    set: function (target, prop, value, receiver) {
-        setTimeout(function () {
-            getAdm(target).doFresh();
-        }, 0);
-        return Reflect.set(target, prop, value, receiver);
-    }
-};
-var Root = /** @class */ (function () {
-    function Root(target) {
-        this.target_ = target;
-        var innerProxy = Proxy.revocable(target, observableHandler);
-        var outerProxy = Proxy.revocable(innerProxy, globalStateHandler);
-        this.proxy_ = outerProxy.proxy;
-        this.revoke_ = function () {
-            outerProxy.revoke();
-            innerProxy.revoke();
-        };
-    }
-    return Root;
-}());
-export function createrRoot(target) {
-    return new Root(target);
+import RootSpace from './Root';
+export function createRoot(target) {
+    return new RootSpace.Root(target);
 }
 export function useRootStore(root) {
+    // eslint-disable-next-line @typescript-eslint/no-unused-vars
     var _a = useState(false), _ = _a[0], setFresh = _a[1];
     useEffect(function () {
-        getAdm(root.target_).addProxy();
-        getAdm(root.target_).addFresh(setFresh);
+        root.rootStoreMounted(setFresh);
         return function () {
-            root.revoke_();
-            getAdm(root.target_).removeProxy();
+            if (root.revoke_() === true) {
+                getAdm(root.target_).removeProxy();
+            }
         };
     }, []);
-    return root.proxy_;
+    return [
+        root.isRevoked() ? root.target_ : root.proxy_,
+        root.revoke_
+    ];
 }
 export function useNormalStore(root) {
-    if (!root.proxy_) {
+    if (!root.hasRootStore()) {
         throw new Error('no root store');
     }
-    return root.proxy_;
+    //if(!Root)
+    return root.isRevoked() ? root.target_ : root.proxy_;
 }
+export var useAutorun = function (fn) {
+    useEffect(function () {
+        var unsubscribe = autorun(fn);
+        return function () { return unsubscribe(); };
+    }, []);
+};

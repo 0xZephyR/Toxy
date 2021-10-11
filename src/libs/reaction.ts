@@ -1,6 +1,9 @@
 export default class Reaction {
 	private timeOutId: any = null;
-	constructor(public reaction: () => void) {}
+	private readonly reaction: () => void = () => {};
+	constructor(reaction: () => void) {
+		this.reaction = reaction;
+	}
 
 	runreaction() {
 		// if (this.timeOutId) {

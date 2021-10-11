@@ -1,2 +1,3 @@
 import createStore from './createStore';
-export var counter = createStore({ count: 0 });
+var c = { age: 20, count: 0 };
+export var counter = createStore(c);

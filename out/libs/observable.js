@@ -1,32 +1,38 @@
 /* eslint-disable no-underscore-dangle */
-import { currentObserver, observableMap, observerMap } from './autorun';
+import { currentObserver, observableMap, reportDependence } from './autorun';
 import { getAdm } from './createStore';
+// 内层handler，实现数据响应
 export var observableHandler = {
-    get: function (target, prop) {
-        var _a, _b, _c, _d, _e, _f;
+    get: function (target, prop, receiver) {
+        //console.log(Reflect.get(receiver, $target));
         if (!currentObserver.current) {
             return getAdm(target).get_(prop);
         }
-        if (!observerMap.get(currentObserver.current)) {
-            observerMap.set(currentObserver.current, []);
-        }
-        if (!((_a = observerMap.get(currentObserver.current)) === null || _a === void 0 ? void 0 : _a.includes(target))) {
-            (_b = observerMap.get(currentObserver.current)) === null || _b === void 0 ? void 0 : _b.push(target);
-        }
-        if (!observableMap.get(target)) {
-            observableMap.set(target, new Map());
-        }
-        if (!((_c = observableMap.get(target)) === null || _c === void 0 ? void 0 : _c.get(prop))) {
-            (_d = observableMap.get(target)) === null || _d === void 0 ? void 0 : _d.set(prop, new Set());
-        }
-        (_f = (_e = observableMap.get(target)) === null || _e === void 0 ? void 0 : _e.get(prop)) === null || _f === void 0 ? void 0 : _f.add(currentObserver.current);
+        reportDependence(target, prop);
         return getAdm(target).get_(prop);
     },
     set: function (target, prop, value, receiver) {
-        setImmediate(function () {
-            var _a, _b;
-            (_b = (_a = observableMap.get(target)) === null || _a === void 0 ? void 0 : _a.get(prop)) === null || _b === void 0 ? void 0 : _b.forEach(function (v) { return v(); });
+        var _a, _b;
+        if (Reflect.get(target, prop) === value) {
+            return Reflect.set(target, prop, value, receiver);
+        }
+        Reflect.set(target, prop, value, receiver);
+        (_b = (_a = observableMap
+            .get(target)) === null || _a === void 0 ? void 0 : _a.get(prop)) === null || _b === void 0 ? void 0 : _b.forEach(function (v) {
+            v.runreaction();
         });
+        return true;
+    }
+};
+//外层handler, 重渲染组件
+export var globalStateHandler = {
+    get: function (target, prop) {
+        return target[prop];
+    },
+    set: function (target, prop, value, receiver) {
+        setTimeout(function () {
+            getAdm(target).doFresh();
+        }, 0);
         return Reflect.set(target, prop, value, receiver);
     }
 };

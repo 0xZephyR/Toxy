@@ -1,67 +1,37 @@
+/* eslint-disable no-unused-vars */
+/* eslint-disable react-hooks/exhaustive-deps */
 /* eslint-disable no-underscore-dangle */
 import { useEffect, useState } from 'react';
 import { autorun } from './autorun';
 import { getAdm } from './createStore';
-import { observableHandler } from './observable';
+import RootSpace from './Root';
 
-interface IRoot<T> {
-	proxy_: ProxyConstructor;
-	target_: T;
-	revoke_: () => void;
-}
-
-// 外层handler，用于重新渲染组件
-const globalStateHandler: ProxyHandler<any> = {
-	get(target, prop, receiver) {
-		return target[prop];
-	},
-	set(target: any, prop: PropertyKey, value: any, receiver: object) {
-		Reflect.set(target, prop, value, receiver);
-		getAdm(target).doFresh();
-		return true;
-	}
-};
-
-// 每个共享状态的组件树的根store
-export class Root<T> implements IRoot<T> {
-	readonly proxy_: ProxyConstructor;
-	readonly target_: T;
-	readonly revoke_: () => void;
-	constructor(target: T) {
-		this.target_ = target;
-		const innerProxy = Proxy.revocable(target as any, observableHandler);
-		const outerProxy = Proxy.revocable(
-			innerProxy.proxy,
-			globalStateHandler
-		);
-		this.proxy_ = outerProxy.proxy;
-		this.revoke_ = () => {
-			outerProxy.revoke();
-			innerProxy.revoke();
-		};
-	}
-}
 export function createRoot<T>(target: T) {
-	return new Root(target);
+	return new RootSpace.Root(target);
 }
-export function useRootStore<T>(root: Root<T>): T {
+export function useRootStore<T>(root: RootSpace.Root<T>): [T, () => boolean] {
+	// eslint-disable-next-line @typescript-eslint/no-unused-vars
 	const [_, setFresh] = useState(false);
 	useEffect(() => {
-		getAdm(root.target_).addProxy();
-		getAdm(root.target_).addFresh(setFresh);
+		root.rootStoreMounted(setFresh);
 		return () => {
-			root.revoke_();
-			getAdm(root.target_).removeProxy();
+			if (root.revoke_() === true) {
+				getAdm(root.target_).removeProxy();
+			}
 		};
 	}, []);
-	return root.proxy_ as unknown as T;
+	return [
+		root.isRevoked() ? root.target_ : (root.proxy_ as unknown as T),
+		root.revoke_
+	];
 }
 
-export function useNormalStore<T>(root: Root<T>) {
-	if (!root.proxy_) {
+export function useNormalStore<T>(root: RootSpace.Root<T>) {
+	if (!root.hasRootStore()) {
 		throw new Error('no root store');
 	}
-	return root.proxy_ as unknown as T;
+	//if(!Root)
+	return root.isRevoked() ? root.target_ : (root.proxy_ as unknown as T);
 }
 
 export const useAutorun = (fn: () => void) => {

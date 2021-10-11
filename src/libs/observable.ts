@@ -4,7 +4,8 @@ import { getAdm } from './createStore';
 
 // 内层handler，实现数据响应
 export const observableHandler: ProxyHandler<any> = {
-	get(target: any, prop: PropertyKey) {
+	get(target: any, prop: PropertyKey, receiver: any) {
+		//console.log(Reflect.get(receiver, $target));
 		if (!currentObserver.current) {
 			return getAdm(target).get_(prop);
 		}
@@ -12,9 +13,6 @@ export const observableHandler: ProxyHandler<any> = {
 		return getAdm(target).get_(prop);
 	},
 	set(target: any, prop: PropertyKey, value: any, receiver: object) {
-		if (currentObserver.current) {
-			return false;
-		}
 		if (Reflect.get(target, prop) === value) {
 			return Reflect.set(target, prop, value, receiver);
 		}
@@ -26,5 +24,18 @@ export const observableHandler: ProxyHandler<any> = {
 				v.runreaction();
 			});
 		return true;
+	}
+};
+
+//外层handler, 重渲染组件
+export const globalStateHandler: ProxyHandler<any> = {
+	get(target, prop) {
+		return target[prop];
+	},
+	set(target: any, prop: PropertyKey, value: any, receiver: object) {
+		setTimeout(() => {
+			getAdm(target).doFresh();
+		}, 0);
+		return Reflect.set(target, prop, value, receiver);
 	}
 };

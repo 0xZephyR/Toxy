@@ -3,11 +3,15 @@ import React from 'react';
 const adm = Symbol();
 export interface StoreObject {}
 class Administration {
+	private _freshId: number = 0;
 	freshMethod: Set<React.Dispatch<React.SetStateAction<boolean>>> = new Set();
 	currentAmountOfProxy: number = 0;
 	constructor(private target_: any) {}
 	addFresh(set: React.Dispatch<React.SetStateAction<boolean>>) {
 		this.freshMethod?.add(set);
+	}
+	removeFresh(set: React.Dispatch<React.SetStateAction<boolean>>) {
+		return this.freshMethod.delete(set);
 	}
 	doFresh() {
 		this.freshMethod?.forEach((v) => v((value) => !value));
