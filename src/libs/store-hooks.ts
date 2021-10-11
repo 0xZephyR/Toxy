@@ -16,18 +16,17 @@ const globalStateHandler: ProxyHandler<any> = {
 		return target[prop];
 	},
 	set(target: any, prop: PropertyKey, value: any, receiver: object) {
-		setTimeout(() => {
-			getAdm(target).doFresh();
-		}, 0);
-		return Reflect.set(target, prop, value, receiver);
+		Reflect.set(target, prop, value, receiver);
+		getAdm(target).doFresh();
+		return true;
 	}
 };
 
 // 每个共享状态的组件树的根store
-class Root<T> implements IRoot<T> {
-	proxy_: ProxyConstructor;
-	target_: T;
-	revoke_: () => void;
+export class Root<T> implements IRoot<T> {
+	readonly proxy_: ProxyConstructor;
+	readonly target_: T;
+	readonly revoke_: () => void;
 	constructor(target: T) {
 		this.target_ = target;
 		const innerProxy = Proxy.revocable(target as any, observableHandler);
@@ -42,7 +41,7 @@ class Root<T> implements IRoot<T> {
 		};
 	}
 }
-export function createrRoot<T>(target: T) {
+export function createRoot<T>(target: T) {
 	return new Root(target);
 }
 export function useRootStore<T>(root: Root<T>): T {

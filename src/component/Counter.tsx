@@ -1,33 +1,43 @@
 import React from 'react';
 import { counter } from '../libs/store';
 import {
-	createrRoot,
+	createRoot,
 	useAutorun,
 	useNormalStore,
 	useRootStore
 } from '../libs/store-hooks';
-const root = createrRoot(counter);
+const root = createRoot(counter);
+export function sleep(interval: number) {
+	const start = Date.now();
+	while (Date.now() - start <= interval * 1000) {}
+}
 export const Another = () => {
 	const counterStore = useNormalStore(root);
-	//useAutorun(() => console.log(counterStore.count));
 	return <span>{counterStore.count}</span>;
 };
-const rootA = createrRoot(counter);
+const rootA = createRoot(counter);
 export const A = () => {
 	const counterStore = useRootStore(rootA);
 	return <p>{counterStore.count}</p>;
 };
-export const Counter = (props: { render: Function }) => {
+export const Counter = () => {
 	const counterStore = useRootStore(root);
+	// const DoubleCounter = useMemo(
+	// 	() => 2 * counterStore.count,
+	// 	[counterStore.count]
+	// );
 	useAutorun(() => {
-		console.log(counterStore.age);
+		console.log(counterStore.count);
 	});
 	return (
 		<div>
 			{counterStore.count}
 			<button
 				onClick={() => {
-					counterStore.count++;
+					for (let i = 0; i < 2; ++i) {
+						counterStore.count++;
+						//console.log('change');
+					}
 				}}
 			>
 				+

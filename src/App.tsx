@@ -1,11 +1,8 @@
 // eslint-disable-next-line no-use-before-define
-import React, { useState } from 'react';
-import { Another, Counter } from './component/Counter';
+import * as React from 'react';
+import { Counter } from './component/Counter';
 function App() {
-	const [count, setCount] = useState(1);
-	return (
-		<Counter render={()=> <Another/>}/>
-	);
+	return <Counter />;
 }
 
 export default App;

@@ -12,6 +12,7 @@ class Administration {
 	doFresh() {
 		this.freshMethod?.forEach((v) => v((value) => !value));
 	}
+	//TODO store代理数量清零后重置store状态
 	addProxy() {
 		++this.currentAmountOfProxy;
 	}
