@@ -4,11 +4,11 @@
 import { useEffect, useState } from 'react';
 import { autorun } from './autorun';
 import { getAdm } from './createStore';
-import RootSpace from './Root';
-export function createRoot(target) {
-    return new RootSpace.Root(target);
+import ModelDefinition from './Model';
+export function createModel(target) {
+    return new ModelDefinition.Model(target);
 }
-export function useRootStore(root) {
+export function useMainDerivation(root) {
     // eslint-disable-next-line @typescript-eslint/no-unused-vars
     var _a = useState(false), _ = _a[0], setFresh = _a[1];
     useEffect(function () {
@@ -24,8 +24,8 @@ export function useRootStore(root) {
         root.revoke_
     ];
 }
-export function useNormalStore(root) {
-    if (!root.hasRootStore()) {
+export function useNormalDerivation(root) {
+    if (!root.hasMainStore()) {
         throw new Error('no root store');
     }
     //if(!Root)

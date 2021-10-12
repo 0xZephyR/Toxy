@@ -1,18 +1,21 @@
+// eslint-disable-next-line no-use-before-define
 import React from 'react';
 import { counter } from '../libs/store';
-import { createRoot, useRootStore } from '../libs/store-hooks';
+import { createModel, useMainDerivation } from '../libs/store-hooks';
 
 export function sleep(interval: number) {
 	const start = Date.now();
 	while (Date.now() - start <= interval * 1000) {}
 }
-
-const root = createRoot(counter);
+const root = createModel(counter);
 root.autorun(() => {
-	console.log(root.get().count);
+	console.log(root.value.count);
 });
+// root.autorun(() => {
+// 	console.log(root.value.count);
+// });
 export const Counter = () => {
-	const [counterStore, revoke] = useRootStore(root);
+	const [counterStore, revoke] = useMainDerivation(root);
 	// const DoubleCounter = useMemo(
 	// 	() => 2 * counterStore.count,
 	// 	[counterStore.count]
@@ -42,18 +45,15 @@ export const Counter = () => {
 	);
 };
 
-const rootA = createRoot(counter);
+const rootA = createModel(counter);
 export const Another = () => {
-	const [counterStore, revoke] = useRootStore(rootA);
-	// useAutorun(() => {
-	// 	console.log(counterStore.count);
-	// });
+	const [counterStore, revoke] = useMainDerivation(rootA);
 	return (
 		<div>
 			{counterStore.count}
 			<button
 				onClick={() => {
-					for (let i = 0; i < 2; ++i) {
+					for (let i = 0; i < 1; ++i) {
 						counterStore.count++;
 						//console.log('change');
 					}

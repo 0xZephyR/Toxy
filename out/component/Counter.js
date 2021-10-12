@@ -11,17 +11,17 @@ var __assign = (this && this.__assign) || function () {
 };
 import { jsx as _jsx, jsxs as _jsxs } from "react/jsx-runtime";
 import { counter } from '../libs/store';
-import { createRoot, useRootStore } from '../libs/store-hooks';
+import { createModel, useMainDerivation } from '../libs/store-hooks';
 export function sleep(interval) {
     var start = Date.now();
     while (Date.now() - start <= interval * 1000) { }
 }
-var root = createRoot(counter);
+var root = createModel(counter);
 root.autorun(function () {
-    console.log(root.get().count);
+    console.log(root.value.count);
 });
 export var Counter = function () {
-    var _a = useRootStore(root), counterStore = _a[0], revoke = _a[1];
+    var _a = useMainDerivation(root), counterStore = _a[0], revoke = _a[1];
     // const DoubleCounter = useMemo(
     // 	() => 2 * counterStore.count,
     // 	[counterStore.count]
@@ -35,9 +35,9 @@ export var Counter = function () {
                     revoke();
                 } }, { children: "revoke" }), void 0)] }, void 0));
 };
-var rootA = createRoot(counter);
+var rootA = createModel(counter);
 export var Another = function () {
-    var _a = useRootStore(rootA), counterStore = _a[0], revoke = _a[1];
+    var _a = useMainDerivation(rootA), counterStore = _a[0], revoke = _a[1];
     // useAutorun(() => {
     // 	console.log(counterStore.count);
     // });
