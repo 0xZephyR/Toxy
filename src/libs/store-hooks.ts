@@ -2,10 +2,11 @@
 /* eslint-disable react-hooks/exhaustive-deps */
 /* eslint-disable no-underscore-dangle */
 import { useEffect, useState } from 'react';
-import { autorun } from './autorun';
 import Model, { ModelMask } from './Model';
+import Reaction from './reaction';
 
 type MaskedModel<T> = Model<T> | ModelMask<T>; // 屏蔽无需暴露给用户的属性与方法
+export let globalCurrent: Reaction | null = null;
 export function createModel<T>(target: T) {
 	return new Model(target) as MaskedModel<T>;
 }
@@ -33,9 +34,10 @@ export function useNormalDerivation<T>(root_: MaskedModel<T>) {
 	return root.proxy_ as unknown as T;
 }
 
-export const useAutorun = (fn: () => void) => {
-	useEffect(() => {
-		const unsubscribe = autorun(fn);
-		return () => unsubscribe();
-	}, []);
-};
+export function autorun(fn: () => void) {
+	const reaction = new Reaction(fn);
+	const prev = globalCurrent;
+	globalCurrent = reaction;
+	fn();
+	globalCurrent = prev;
+}

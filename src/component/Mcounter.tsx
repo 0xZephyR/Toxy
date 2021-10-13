@@ -1,19 +1,24 @@
 import { action, autorun, observable } from 'mobx';
 import { observer } from 'mobx-react';
 import React from 'react';
-import { sleep } from './Counter';
 const counter = observable(
 	{
 		count: 1,
+		person: {
+			name: 'Jack',
+			age: 18
+		},
 		increment() {
-			this.count++;
+			this.person.age++;
+		},
+		change() {
+			this.person = { ...this.person, name: 'John' };
 		}
 	},
 	{ increment: action }
 );
 autorun(() => {
-	sleep(2);
-	console.log(counter.count);
+	console.log(counter.person.age);
 });
 export const Mcounter = observer(() => {
 	return (
@@ -21,9 +26,7 @@ export const Mcounter = observer(() => {
 			{counter.count}
 			<button
 				onClick={() => {
-					counter.increment();
-					console.log('change');
-					counter.increment();
+					counter.change();
 				}}
 			>
 				add

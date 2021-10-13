@@ -4,7 +4,6 @@ import Model from './Model';
 const adm = Symbol();
 export interface StoreObject {}
 class Administration<T, K extends keyof T> {
-	private _freshId: number = 0;
 	private freshMethod: Set<React.Dispatch<React.SetStateAction<boolean>>> =
 		new Set();
 	private _derivedModels: Set<Model<T>> = new Set();

@@ -1,12 +1,13 @@
 /* eslint-disable no-underscore-dangle */
 import { getAdm } from './createStore';
 import Model from './Model';
+import { globalCurrent } from './store-hooks';
 
 // 内层handler，实现数据响应
 export const observableHandler: any = {
 	get(target: any, prop: PropertyKey) {
 		const model: Model<any> = this.this_;
-		if (!model.current) {
+		if (!globalCurrent) {
 			return getAdm(target).get_(prop);
 		}
 		// if (!receiver.this_.current) {

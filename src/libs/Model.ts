@@ -4,6 +4,7 @@ import React from 'react';
 import { getAdm } from './createStore';
 import { globalStateHandler, observableHandler } from './observable';
 import Reaction from './reaction';
+import { globalCurrent as currentObserver } from './store-hooks';
 interface IModel<T> {
 	proxy_: ProxyConstructor | null;
 	revoke_: (setFresh: React.Dispatch<React.SetStateAction<boolean>>) => void;
@@ -22,7 +23,9 @@ export class Model<T> implements IModel<T> {
 	private _current: Reaction | null = null;
 	revoke_: () => boolean;
 	private _observers: Map<Reaction, Set<Object | PropertyKey>> = new Map();
-	private _observables: Map<PropertyKey, Set<Reaction>> = new Map();
+	private _ob: WeakMap<Object, Map<PropertyKey, Set<Reaction>>> =
+		new WeakMap();
+	private _observables: Map<PropertyKey | string, Set<Reaction>> = new Map();
 	private _hasMainDerivation: boolean = false;
 	private _setFresh: React.Dispatch<React.SetStateAction<boolean>> | null =
 		() => {};
@@ -55,23 +58,22 @@ export class Model<T> implements IModel<T> {
 		};
 	}
 
-	autorun(fn: () => void): void {
-		const reaction = new Reaction(fn);
-		this._observers.set(reaction, new Set());
-		this._current = reaction;
-		fn();
-		this._current = null;
-	}
-
-	reportObserver(prop: PropertyKey) {
-		this._observers.get(this._current!)!.add(prop);
+	reportObserver(prop: PropertyKey, target?: Object) {
+		// if (target){
+		// 	if (!this._ob.has(target)){
+		// 		this._ob.set(target, new Map());
+		// 	}
+		// 	if (!this._ob.get(target)?.has(prop)){
+		// 		this._ob.get(target)?.set(prop, new Set());
+		// 	}
+		// 	this._ob.get(target)?.get(prop)?.add(currentObserver!);
+		// }
+		this._observers.set(currentObserver!, new Set());
+		this._observers.get(currentObserver!)!.add(prop);
 		if (!this._observables.has(prop)) {
 			this._observables.set(prop, new Set());
 		}
-		this._observables.get(prop)?.add(this._current!);
-	}
-	private reportUpdate(prop: PropertyKey) {
-		this._observables.get(prop)?.forEach((v) => v.runreaction());
+		this._observables.get(prop)?.add(currentObserver!);
 	}
 	private destroy() {
 		this._hasMainDerivation = false;

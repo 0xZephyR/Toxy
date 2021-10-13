@@ -1,6 +1,10 @@
-export default class Reaction {
+interface IReaction {
+	readonly reaction: () => void;
+}
+
+export default class Reaction implements IReaction {
 	private timeOutId: any = null;
-	private readonly reaction: () => void = () => {};
+	reaction: () => void = () => {};
 	constructor(reaction: () => void) {
 		this.reaction = reaction;
 	}
@@ -17,9 +21,9 @@ export default class Reaction {
 	}
 }
 
-export class Batch {
+export class Batch implements IReaction {
 	private timeOutId: any = null;
-	private readonly reaction: () => void = () => {};
+	reaction: () => void = () => {};
 	constructor(reaction: () => void) {
 		this.reaction = reaction;
 	}

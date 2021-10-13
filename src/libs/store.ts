@@ -1,18 +1,17 @@
 import createStore from './createStore';
-
-const c = { age: 20, count: 0 };
-const a = {
-	value: 0,
-	person: {
-		name: 'Jack',
-		age: 18
-	}
-};
-const proxy = new Proxy(a, {
+const handler: ProxyHandler<any> = {
 	get(target: any, prop: any) {
 		console.log(prop);
 		return target[prop];
+	},
+	set(target: any, prop: any, newValue: any, receiver: any) {
+		console.log(prop);
+		return Reflect.set(target, prop, newValue, receiver);
 	}
-});
-const vvv = proxy.person;
-export const counter = createStore(c);
+};
+const a = new Proxy({ name: 'Jack' }, handler);
+const c = { value: 10, proxy: a };
+const cp = new Proxy(c, handler);
+console.log(cp);
+export const counter = createStore({ age: 20, count: 0 });
+export const person = createStore({ name: 'Mike', age: 18 });
