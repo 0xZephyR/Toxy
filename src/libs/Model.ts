@@ -2,7 +2,7 @@
 /* eslint-disable no-underscore-dangle */
 import React from 'react';
 import { getAdm } from './createStore';
-import { globalStateHandler, observableHandler } from './observable';
+import { observableHandler, toDeepProxy } from './observable';
 import Reaction from './reaction';
 import { globalCurrent as currentObserver } from './store-hooks';
 interface IModel<T> {
@@ -12,7 +12,6 @@ interface IModel<T> {
 export let globalDerivation: any = null;
 export let globalAutorun: (() => void) | null = null;
 export interface ModelMask<T> {
-	autorun: () => void;
 	value: T;
 }
 // 每个共享状态的组件树的根store
@@ -22,10 +21,10 @@ export class Model<T> implements IModel<T> {
 	private readonly this_: Model<T> | null = null;
 	private _current: Reaction | null = null;
 	revoke_: () => boolean;
-	private _observers: Map<Reaction, Set<Object | PropertyKey>> = new Map();
-	private _ob: WeakMap<Object, Map<PropertyKey, Set<Reaction>>> =
+	private _observers: Map<Reaction, WeakMap<Object, Set<PropertyKey>>> =
+		new Map();
+	private _observables: WeakMap<Object, Map<PropertyKey, Set<Reaction>>> =
 		new WeakMap();
-	private _observables: Map<PropertyKey | string, Set<Reaction>> = new Map();
 	private _hasMainDerivation: boolean = false;
 	private _setFresh: React.Dispatch<React.SetStateAction<boolean>> | null =
 		() => {};
@@ -34,20 +33,10 @@ export class Model<T> implements IModel<T> {
 		this.target_ = target;
 		getAdm(target).newModel(this);
 		this.this_ = this;
+		const handler = { ...observableHandler, this_: this } as any;
 		//内层proxy
-		const innerProxy = Proxy.revocable(
-			target as any,
-			{ ...observableHandler, this_: this } as any
-		);
-		//外层proxy
-		const outerProxy = Proxy.revocable(
-			innerProxy.proxy,
-			globalStateHandler
-		);
-		this.proxy_ = outerProxy.proxy;
+		this.proxy_ = toDeepProxy(this.target_, handler);
 		this.revoke_ = () => {
-			outerProxy.revoke();
-			innerProxy.revoke();
 			getAdm(this.target_).removeFresh(this._setFresh!);
 			setTimeout(() => {
 				const f = this._setFresh;
@@ -57,8 +46,15 @@ export class Model<T> implements IModel<T> {
 			return true;
 		};
 	}
+	proxify(target: any, handlers: any[]) {
+		const proxy = new Proxy(
+			new Proxy(target as any, handlers[0]),
+			handlers[1]
+		);
 
-	reportObserver(prop: PropertyKey, target?: Object) {
+		return proxy as ProxyConstructor;
+	}
+	reportObserver(prop: PropertyKey, target: Object) {
 		// if (target){
 		// 	if (!this._ob.has(target)){
 		// 		this._ob.set(target, new Map());
@@ -68,12 +64,18 @@ export class Model<T> implements IModel<T> {
 		// 	}
 		// 	this._ob.get(target)?.get(prop)?.add(currentObserver!);
 		// }
-		this._observers.set(currentObserver!, new Set());
-		this._observers.get(currentObserver!)!.add(prop);
-		if (!this._observables.has(prop)) {
-			this._observables.set(prop, new Set());
+		this._observers.set(currentObserver!, new Map());
+		if (!this._observers.get(currentObserver!)?.has(target)) {
+			this._observers.get(currentObserver!)?.set(target, new Set());
 		}
-		this._observables.get(prop)?.add(currentObserver!);
+		this._observers.get(currentObserver!)?.get(target)?.add(prop);
+		if (!this._observables.has(target)) {
+			this._observables.set(target, new Map());
+		}
+		if (!this._observables.get(target)?.has(prop)) {
+			this._observables.get(target)?.set(prop, new Set());
+		}
+		this._observables.get(target)?.get(prop)?.add(currentObserver!);
 	}
 	private destroy() {
 		this._hasMainDerivation = false;
@@ -85,7 +87,6 @@ export class Model<T> implements IModel<T> {
 				return true;
 			}
 		});
-		this._observables.clear();
 		this._observers.clear();
 		this.target_ = null;
 	}

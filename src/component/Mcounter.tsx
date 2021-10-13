@@ -29,7 +29,7 @@ export const Mcounter = observer(() => {
 					counter.change();
 				}}
 			>
-				add
+				change
 			</button>
 		</div>
 	);

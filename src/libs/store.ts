@@ -9,9 +9,23 @@ const handler: ProxyHandler<any> = {
 		return Reflect.set(target, prop, newValue, receiver);
 	}
 };
-const a = new Proxy({ name: 'Jack' }, handler);
-const c = { value: 10, proxy: a };
-const cp = new Proxy(c, handler);
-console.log(cp);
+
 export const counter = createStore({ age: 20, count: 0 });
-export const person = createStore({ name: 'Mike', age: 18 });
+export const person = createStore({
+	name: 'Mike',
+	age: 30,
+	child: {
+		name: 'John',
+		age: 18
+	}
+});
+
+function change(o: any) {
+	// eslint-disable-next-line no-param-reassign
+	o = new Proxy(o, {});
+	console.log(o);
+}
+
+let v = { age: 0 };
+change(v);
+console.log(v);

@@ -4,30 +4,30 @@ import Model from './Model';
 const adm = Symbol();
 export interface StoreObject {}
 class Administration<T, K extends keyof T> {
-	private freshMethod: Set<React.Dispatch<React.SetStateAction<boolean>>> =
+	private freshMethods: Set<React.Dispatch<React.SetStateAction<boolean>>> =
 		new Set();
 	private _derivedModels: Set<Model<T>> = new Set();
 	constructor(private target_: T) {}
 	addFresh(set: React.Dispatch<React.SetStateAction<boolean>>) {
-		this.freshMethod?.add(set);
+		this.freshMethods?.add(set);
 	}
 	removeFresh(set: React.Dispatch<React.SetStateAction<boolean>>) {
-		return this.freshMethod.delete(set);
+		return this.freshMethods.delete(set);
 	}
 	doFresh() {
-		this.freshMethod?.forEach((v) => v((value) => !value));
+		this.freshMethods?.forEach((v) => v((value) => !value));
 	}
-	run(prop: K) {
+	run<A, B extends keyof A>(prop: B, target: A) {
 		this._derivedModels.forEach((v) => {
-			v.observable.get(prop)?.forEach((r) => r.runreaction());
+			v.observable
+				.get(target)
+				?.get(prop)
+				?.forEach((value) => value.runreaction());
 		});
 	}
 	//TODO store代理数量清零后重置store状态
 	newModel(model: Model<T>) {
 		this._derivedModels.add(model);
-	}
-	get_(key: K) {
-		return this.target_[key];
 	}
 }
 

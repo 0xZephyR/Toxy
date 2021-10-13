@@ -11,8 +11,9 @@ export function sleep(interval: number) {
 const root = createModel(counter);
 const Jack = createModel(person);
 autorun(() => {
-	console.log(root.value.count + ' ' + Jack.value.age);
+	console.log(root.value.count + ' ' + Jack.value.child.age);
 });
+
 // root.autorun(() => {
 // 	console.log(root.value.count);
 // });
@@ -36,7 +37,7 @@ export const Counter = () => {
 			</button>
 			<button
 				onClick={() => {
-					jack.age++;
+					jack.child.age++;
 				}}
 			>
 				revoke
