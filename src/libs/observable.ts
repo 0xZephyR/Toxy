@@ -1,29 +1,31 @@
 /* eslint-disable no-underscore-dangle */
 import { getAdm } from './createStore';
+import globals, { currentObserver } from './globals';
 import Model from './Model';
-import { globalCurrent } from './store-hooks';
-
+//用于实现数据响应的对象和函数
 export const observableHandler: any = {
 	get(target: any, prop: PropertyKey) {
 		const model: Model<any> = this.this_;
-		if (!globalCurrent) {
+		if (!currentObserver.get()) {
 			return Reflect.get(target, prop);
 		}
-		// if (!receiver.this_.current) {
-		// 	return getAdm(target).get_(prop);
-		// }
-		model.reportObserver(prop, target);
+		model.reportNewObserver(prop, target);
 		return Reflect.get(target, prop);
 	},
+
 	set(target: any, prop: PropertyKey, value: any, receiver: any) {
+		const model: Model<any> = this.this_;
 		if (Reflect.get(target, prop) === value) {
 			return Reflect.set(target, prop, value, receiver);
 		}
+		if (globals.Batch) {
+			model.updateBatch(target, prop);
+			return Reflect.set(target, prop, value, receiver);
+		}
 		Reflect.set(target, prop, value, receiver);
-		const model: Model<any> = this.this_;
-		getAdm(model.target).run(prop, target);
+		getAdm(model.target).runObserversInModels(prop, target);
 		setTimeout(() => {
-			getAdm(this.this_.target_).doFresh();
+			getAdm(this.this_.target_).fresh();
 		}, 0);
 		return true;
 	}

@@ -3,7 +3,6 @@ interface IReaction {
 }
 
 export default class Reaction implements IReaction {
-	private timeOutId: any = null;
 	reaction: () => void = () => {};
 	constructor(reaction: () => void) {
 		this.reaction = reaction;
@@ -21,12 +20,8 @@ export default class Reaction implements IReaction {
 	}
 }
 
-export class Batch implements IReaction {
+export class Batch extends Reaction {
 	private timeOutId: any = null;
-	reaction: () => void = () => {};
-	constructor(reaction: () => void) {
-		this.reaction = reaction;
-	}
 
 	runreaction() {
 		if (this.timeOutId) {

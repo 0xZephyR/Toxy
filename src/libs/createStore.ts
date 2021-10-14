@@ -3,7 +3,7 @@ import React from 'react';
 import Model from './Model';
 const adm = Symbol();
 export interface StoreObject {}
-class Administration<T, K extends keyof T> {
+class Administration<T> {
 	private freshMethods: Set<React.Dispatch<React.SetStateAction<boolean>>> =
 		new Set();
 	private _derivedModels: Set<Model<T>> = new Set();
@@ -14,25 +14,22 @@ class Administration<T, K extends keyof T> {
 	removeFresh(set: React.Dispatch<React.SetStateAction<boolean>>) {
 		return this.freshMethods.delete(set);
 	}
-	doFresh() {
+	fresh() {
 		this.freshMethods?.forEach((v) => v((value) => !value));
 	}
-	run<A, B extends keyof A>(prop: B, target: A) {
+	runObserversInModels<A, B extends keyof A>(prop: B, target: A) {
 		this._derivedModels.forEach((v) => {
-			v.observable
-				.get(target)
-				?.get(prop)
-				?.forEach((value) => value.runreaction());
+			v.runObservers(target, prop);
 		});
 	}
 	//TODO store代理数量清零后重置store状态
-	newModel(model: Model<T>) {
+	addNewModel(model: Model<T>) {
 		this._derivedModels.add(model);
 	}
 }
 
-export function getAdm(o: any): Administration<any, any> {
-	return o[adm];
+export function getAdm<T>(o: T): Administration<T> {
+	return (o as any)[adm];
 }
 export default function createStore<T>(target: T) {
 	Object.defineProperty(target, adm, {

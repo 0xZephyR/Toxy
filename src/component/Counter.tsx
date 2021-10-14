@@ -1,25 +1,32 @@
 // eslint-disable-next-line no-use-before-define
 import React from 'react';
-import { counter, person } from '../libs/store';
-import { autorun, createModel, useMainDerivation } from '../libs/store-hooks';
+import { counter as counterStore, person } from '../libs/store';
+import {
+	autorun,
+	createModel,
+	transaction,
+	useMainDerivation,
+	useNormalDerivation
+} from '../libs/store-hooks';
 
 export function sleep(interval: number) {
 	const start = Date.now();
 	while (Date.now() - start <= interval * 1000) {}
 }
 
-const root = createModel(counter);
+const counterModel = createModel(counterStore);
 const Jack = createModel(person);
 autorun(() => {
-	console.log(root.value.count + ' ' + Jack.value.child.age);
+	console.log(counterModel.value.count + ' ' + Jack.value.child.age);
 });
 
 // root.autorun(() => {
 // 	console.log(root.value.count);
 // });
+
 export const Counter = () => {
-	const [counterStore, revoke] = useMainDerivation(root);
-	const [jack, presonRevoke] = useMainDerivation(Jack);
+	const [counter, freeze] = useMainDerivation(counterModel);
+	const [jack, presonFreeze] = useMainDerivation(Jack);
 	// const DoubleCounter = useMemo(
 	// 	() => 2 * counterStore.count,
 	// 	[counterStore.count]
@@ -27,10 +34,16 @@ export const Counter = () => {
 
 	return (
 		<div>
-			{counterStore.count}
+			{counter.count}
 			<button
 				onClick={() => {
-					counterStore.count++;
+					transaction(() => {
+						transaction(() => {
+							counter.count++;
+							counter.count++;
+						});
+						counter.count++;
+					});
 				}}
 			>
 				+
@@ -40,22 +53,26 @@ export const Counter = () => {
 					jack.child.age++;
 				}}
 			>
-				revoke
+				JackAdd
 			</button>
+			<A />
 		</div>
 	);
 };
-
-const rootA = createModel(counter);
+const A = () => {
+	const counter = useNormalDerivation(counterModel);
+	return <div>{counter.count}</div>;
+};
+const rootA = createModel(counterStore);
 export const Another = () => {
-	const [counterStore, revoke] = useMainDerivation(rootA);
+	const [counter, revoke] = useMainDerivation(rootA);
 	return (
 		<div>
-			{counterStore.count}
+			{counter.count}
 			<button
 				onClick={() => {
 					for (let i = 0; i < 1; ++i) {
-						counterStore.count++;
+						counter.count++;
 						//console.log('change');
 					}
 				}}

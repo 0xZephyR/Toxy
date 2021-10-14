@@ -2,12 +2,12 @@
 /* eslint-disable no-underscore-dangle */
 import React from 'react';
 import { getAdm } from './createStore';
+import { batchQueue, currentObserver } from './globals';
 import { observableHandler, toDeepProxy } from './observable';
 import Reaction from './reaction';
-import { globalCurrent as currentObserver } from './store-hooks';
-interface IModel<T> {
+interface IModel {
 	proxy_: ProxyConstructor | null;
-	revoke_: (setFresh: React.Dispatch<React.SetStateAction<boolean>>) => void;
+	freeze: (setFresh: React.Dispatch<React.SetStateAction<boolean>>) => void;
 }
 export let globalDerivation: any = null;
 export let globalAutorun: (() => void) | null = null;
@@ -15,12 +15,14 @@ export interface ModelMask<T> {
 	value: T;
 }
 // 每个共享状态的组件树的根store
-export class Model<T> implements IModel<T> {
-	proxy_: ProxyConstructor | null;
+
+type Derivation = ProxyConstructor | null;
+
+export class Model<T> implements IModel {
+	proxy_: Derivation;
+	_batch: any = null;
 	private target_: T | null;
-	private readonly this_: Model<T> | null = null;
-	private _current: Reaction | null = null;
-	revoke_: () => boolean;
+	freeze: () => boolean;
 	private _observers: Map<Reaction, WeakMap<Object, Set<PropertyKey>>> =
 		new Map();
 	private _observables: WeakMap<Object, Map<PropertyKey, Set<Reaction>>> =
@@ -31,57 +33,55 @@ export class Model<T> implements IModel<T> {
 	private _isRevoked: boolean = false;
 	constructor(target: T) {
 		this.target_ = target;
-		getAdm(target).newModel(this);
-		this.this_ = this;
+		getAdm(target).addNewModel(this);
 		const handler = { ...observableHandler, this_: this } as any;
-		//内层proxy
 		this.proxy_ = toDeepProxy(this.target_, handler);
-		this.revoke_ = () => {
+		this.freeze = () => {
 			getAdm(this.target_).removeFresh(this._setFresh!);
 			setTimeout(() => {
 				const f = this._setFresh;
-				this.destroy();
+				this.clear();
 				f!((v) => !v);
 			}, 0);
 			return true;
 		};
 	}
-	proxify(target: any, handlers: any[]) {
-		const proxy = new Proxy(
-			new Proxy(target as any, handlers[0]),
-			handlers[1]
-		);
-
-		return proxy as ProxyConstructor;
+	reportNewObserver(prop: PropertyKey, target: Object) {
+		this.updateObserver(prop, target);
+		this.updateObservable(prop, target);
 	}
-	reportObserver(prop: PropertyKey, target: Object) {
-		// if (target){
-		// 	if (!this._ob.has(target)){
-		// 		this._ob.set(target, new Map());
-		// 	}
-		// 	if (!this._ob.get(target)?.has(prop)){
-		// 		this._ob.get(target)?.set(prop, new Set());
-		// 	}
-		// 	this._ob.get(target)?.get(prop)?.add(currentObserver!);
-		// }
-		this._observers.set(currentObserver!, new Map());
-		if (!this._observers.get(currentObserver!)?.has(target)) {
-			this._observers.get(currentObserver!)?.set(target, new Set());
+	updateObserver(prop: PropertyKey, target: Object) {
+		if (this._observers.has(currentObserver.get()!)) {
+			this._observers.set(currentObserver.get()!, new Map());
 		}
-		this._observers.get(currentObserver!)?.get(target)?.add(prop);
+		if (!this._observers.get(currentObserver.get()!)?.has(target)) {
+			this._observers.get(currentObserver.get()!)?.set(target, new Set());
+		}
+		this._observers.get(currentObserver.get()!)?.get(target)?.add(prop);
+	}
+	updateObservable(prop: PropertyKey, target: Object) {
 		if (!this._observables.has(target)) {
 			this._observables.set(target, new Map());
 		}
 		if (!this._observables.get(target)?.has(prop)) {
 			this._observables.get(target)?.set(prop, new Set());
 		}
-		this._observables.get(target)?.get(prop)?.add(currentObserver!);
+		this._observables.get(target)?.get(prop)?.add(currentObserver.get()!);
 	}
-	private destroy() {
+
+	updateBatch(target: any, prop: PropertyKey) {
+		const set = this.findReaction(target, prop);
+		if (set) {
+			set.forEach((v) => batchQueue.addReaction(v));
+		}
+		batchQueue.addStore(this.target_);
+		batchQueue.run();
+	}
+	private clear() {
 		this._hasMainDerivation = false;
 		this._isRevoked = true;
 		this._setFresh = null;
-		this.revoke_ = () => false;
+		this.freeze = () => false;
 		this.proxy_ = new Proxy(Object.assign({}, this.target_ as any), {
 			set() {
 				return true;
@@ -90,14 +90,16 @@ export class Model<T> implements IModel<T> {
 		this._observers.clear();
 		this.target_ = null;
 	}
-	isRevoked() {
+	isFrozen() {
 		return this._isRevoked;
 	}
 	hasMainStore() {
 		return this._hasMainDerivation;
 	}
 
-	rootStoreMounted(setFresh: React.Dispatch<React.SetStateAction<boolean>>) {
+	mountMainDerivation(
+		setFresh: React.Dispatch<React.SetStateAction<boolean>>
+	) {
 		if (this._hasMainDerivation) {
 			throw Error('There is already a main derivation');
 		} else {
@@ -106,19 +108,17 @@ export class Model<T> implements IModel<T> {
 			getAdm(this.target_).addFresh(setFresh);
 		}
 	}
-
-	log() {
-		console.log(this);
+	runObservers(target: any, prop: any) {
+		this._observables
+			.get(target)
+			?.get(prop)
+			?.forEach((value) => value.runreaction());
+	}
+	findReaction(target: any, prop: any) {
+		return this._observables.get(target)?.get(prop);
 	}
 	get value() {
 		return this.proxy_ as unknown as T;
-	}
-	get current() {
-		return this._current;
-	}
-
-	get observable() {
-		return this._observables;
 	}
 
 	get target() {
