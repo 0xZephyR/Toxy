@@ -3,4 +3,5 @@ import { jsx as _jsx, jsxs as _jsxs } from "react/jsx-runtime";
 import React from 'react';
 import ReactDOM from 'react-dom';
 import { Another, Counter } from './component/Counter';
-ReactDOM.render(_jsxs(React.StrictMode, { children: [_jsx(Counter, {}, void 0), _jsx(Another, {}, void 0)] }, void 0), document.getElementById('root'));
+import { Mcounter } from './component/Mcounter';
+ReactDOM.render(_jsxs(React.StrictMode, { children: [_jsx(Counter, {}, void 0), _jsx(Another, {}, void 0), _jsx(Mcounter, {}, void 0)] }, void 0), document.getElementById('root'));

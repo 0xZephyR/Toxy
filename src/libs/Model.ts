@@ -13,6 +13,7 @@ export let globalDerivation: any = null;
 export let globalAutorun: (() => void) | null = null;
 export interface ModelMask<T> {
 	value: T;
+	isMounted: () => boolean;
 }
 // 每个共享状态的组件树的根store
 
@@ -21,6 +22,7 @@ type Derivation = ProxyConstructor | null;
 export class Model<T> implements IModel {
 	proxy_: Derivation;
 	_batch: any = null;
+	private _hasMounted: boolean = false;
 	private target_: T | null;
 	freeze: () => boolean;
 	private _observers: Map<Reaction, WeakMap<Object, Set<PropertyKey>>> =
@@ -93,13 +95,11 @@ export class Model<T> implements IModel {
 	isFrozen() {
 		return this._isRevoked;
 	}
-	hasMainStore() {
-		return this._hasMainDerivation;
+	isMounted(): boolean {
+		return Boolean(this._hasMounted);
 	}
 
-	mountMainDerivation(
-		setFresh: React.Dispatch<React.SetStateAction<boolean>>
-	) {
+	addFresh(setFresh: React.Dispatch<React.SetStateAction<boolean>>) {
 		if (this._hasMainDerivation) {
 			throw Error('There is already a main derivation');
 		} else {

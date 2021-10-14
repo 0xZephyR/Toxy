@@ -1,23 +1,23 @@
 // eslint-disable-next-line no-use-before-define
 import React from 'react';
-import { counter as counterStore, person } from '../libs/store';
 import {
 	autorun,
 	createModel,
 	transaction,
 	useMainDerivation,
 	useNormalDerivation
-} from '../libs/store-hooks';
+} from '../libs/api';
+import { counter as counterStore, person } from '../libs/store';
 
 export function sleep(interval: number) {
 	const start = Date.now();
 	while (Date.now() - start <= interval * 1000) {}
 }
 
-const counterModel = createModel(counterStore);
-const Jack = createModel(person);
+const $counter = createModel(counterStore);
+const $person = createModel(person);
 autorun(() => {
-	console.log(counterModel.value.count + ' ' + Jack.value.child.age);
+	console.log($counter.value.count + ' ' + $person.value.child.age);
 });
 
 // root.autorun(() => {
@@ -25,13 +25,12 @@ autorun(() => {
 // });
 
 export const Counter = () => {
-	const [counter, freeze] = useMainDerivation(counterModel);
-	const [jack, presonFreeze] = useMainDerivation(Jack);
+	const [counter, freeze] = useMainDerivation($counter);
+	const [jack, presonFreeze] = useMainDerivation($person);
 	// const DoubleCounter = useMemo(
 	// 	() => 2 * counterStore.count,
 	// 	[counterStore.count]
 	// );
-
 	return (
 		<div>
 			{counter.count}
@@ -59,10 +58,12 @@ export const Counter = () => {
 		</div>
 	);
 };
+
 const A = () => {
-	const counter = useNormalDerivation(counterModel);
+	const counter = useNormalDerivation($counter);
 	return <div>{counter.count}</div>;
 };
+
 const rootA = createModel(counterStore);
 export const Another = () => {
 	const [counter, revoke] = useMainDerivation(rootA);

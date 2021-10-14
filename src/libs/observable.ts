@@ -1,27 +1,34 @@
 /* eslint-disable no-underscore-dangle */
 import { getAdm } from './createStore';
-import globals, { currentObserver } from './globals';
+import { Batch, currentObserver } from './globals';
 import Model from './Model';
-//用于实现数据响应的对象和函数
+/**
+ * !用于实现数据响应的函数与对象
+ */
 export const observableHandler: any = {
 	get(target: any, prop: PropertyKey) {
 		const model: Model<any> = this.this_;
+		// 若不处于autorun上下文中，只返回值
 		if (!currentObserver.get()) {
 			return Reflect.get(target, prop);
 		}
+		// 收集依赖
 		model.reportNewObserver(prop, target);
 		return Reflect.get(target, prop);
 	},
 
 	set(target: any, prop: PropertyKey, value: any, receiver: any) {
 		const model: Model<any> = this.this_;
+		// 检查数据是否有更新，若无更新，则不通知observer
 		if (Reflect.get(target, prop) === value) {
 			return Reflect.set(target, prop, value, receiver);
 		}
-		if (globals.Batch) {
+		// 若当前处于事务中，只收集要触发的observer
+		if (Batch.level) {
 			model.updateBatch(target, prop);
 			return Reflect.set(target, prop, value, receiver);
 		}
+		// 普通的数据更新
 		Reflect.set(target, prop, value, receiver);
 		getAdm(model.target).runObserversInModels(prop, target);
 		setTimeout(() => {

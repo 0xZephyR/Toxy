@@ -1,38 +1,68 @@
 /* eslint-disable no-underscore-dangle */
-import { currentObserver, observableMap, reportDependence } from './autorun';
 import { getAdm } from './createStore';
-// 内层handler，实现数据响应
+import { Batch, currentObserver } from './globals';
+/**
+ * !用于实现数据响应的函数与对象
+ */
 export var observableHandler = {
-    get: function (target, prop, receiver) {
-        //console.log(Reflect.get(receiver, $target));
-        if (!currentObserver.current) {
-            return getAdm(target).get_(prop);
+    get: function (target, prop) {
+        var model = this.this_;
+        // 若不处于autorun上下文中，只返回值
+        if (!currentObserver.get()) {
+            return Reflect.get(target, prop);
         }
-        reportDependence(target, prop);
-        return getAdm(target).get_(prop);
+        // 收集依赖
+        model.reportNewObserver(prop, target);
+        return Reflect.get(target, prop);
     },
     set: function (target, prop, value, receiver) {
-        var _a, _b;
+        var _this = this;
+        var model = this.this_;
+        // 检查数据是否有更新，若无更新，则不通知observer
         if (Reflect.get(target, prop) === value) {
             return Reflect.set(target, prop, value, receiver);
         }
+        // 若当前处于事务中，只收集要触发的observer
+        if (Batch.level) {
+            model.updateBatch(target, prop);
+            return Reflect.set(target, prop, value, receiver);
+        }
+        // 普通的数据更新
         Reflect.set(target, prop, value, receiver);
-        (_b = (_a = observableMap
-            .get(target)) === null || _a === void 0 ? void 0 : _a.get(prop)) === null || _b === void 0 ? void 0 : _b.forEach(function (v) {
-            v.runreaction();
-        });
+        getAdm(model.target).runObserversInModels(prop, target);
+        setTimeout(function () {
+            getAdm(_this.this_.target_).fresh();
+        }, 0);
         return true;
     }
 };
-//外层handler, 重渲染组件
-export var globalStateHandler = {
-    get: function (target, prop) {
-        return target[prop];
-    },
-    set: function (target, prop, value, receiver) {
-        setTimeout(function () {
-            getAdm(target).doFresh();
-        }, 0);
-        return Reflect.set(target, prop, value, receiver);
+export function toDeepProxy(object_, handler_) {
+    if (!isPureObject(object_)) {
+        addSubProxy(object_, handler_);
     }
-};
+    return new Proxy(object_, handler_);
+    //这是一个递归函数，目的是遍历object的所有属性，如果不是pure object,那么就继续遍历object的属性的属性，如果是pure object那么就加上proxy
+    function addSubProxy(object, handler) {
+        for (var prop in object) {
+            if (typeof object[prop] == 'object') {
+                if (!isPureObject(object[prop])) {
+                    addSubProxy(object[prop], handler);
+                }
+                object[prop] = new Proxy(object[prop], handler);
+            }
+        }
+        // eslint-disable-next-line no-param-reassign
+    }
+    //是不是一个pure object,意思就是object里面没有再嵌套object了
+    function isPureObject(object) {
+        if (typeof object !== 'object') {
+            return false;
+        }
+        for (var prop in object) {
+            if (typeof object[prop] == 'object') {
+                return false;
+            }
+        }
+        return true;
+    }
+}

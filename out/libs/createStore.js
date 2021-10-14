@@ -1,31 +1,28 @@
 var adm = Symbol();
 var Administration = /** @class */ (function () {
-    function Administration(target_) {
-        this.target_ = target_;
-        this._freshId = 0;
-        this.freshMethod = new Set();
-        this.currentAmountOfProxy = 0;
+    function Administration(target) {
+        this.freshMethods = new Set();
+        this._derivedModels = new Set();
+        this.target_ = target;
     }
     Administration.prototype.addFresh = function (set) {
         var _a;
-        (_a = this.freshMethod) === null || _a === void 0 ? void 0 : _a.add(set);
+        (_a = this.freshMethods) === null || _a === void 0 ? void 0 : _a.add(set);
     };
     Administration.prototype.removeFresh = function (set) {
-        return this.freshMethod.delete(set);
+        return this.freshMethods.delete(set);
     };
-    Administration.prototype.doFresh = function () {
+    Administration.prototype.fresh = function () {
         var _a;
-        (_a = this.freshMethod) === null || _a === void 0 ? void 0 : _a.forEach(function (v) { return v(function (value) { return !value; }); });
+        (_a = this.freshMethods) === null || _a === void 0 ? void 0 : _a.forEach(function (v) { return v(function (value) { return !value; }); });
     };
-    //TODO store代理数量清零后重置store状态
-    Administration.prototype.addProxy = function () {
-        ++this.currentAmountOfProxy;
+    Administration.prototype.runObserversInModels = function (prop, target) {
+        this._derivedModels.forEach(function (v) {
+            v.runObservers(target, prop);
+        });
     };
-    Administration.prototype.removeProxy = function () {
-        --this.currentAmountOfProxy;
-    };
-    Administration.prototype.get_ = function (key) {
-        return this.target_[key];
+    Administration.prototype.addNewModel = function (model) {
+        this._derivedModels.add(model);
     };
     return Administration;
 }());

@@ -2,36 +2,16 @@
 /* eslint-disable react-hooks/exhaustive-deps */
 /* eslint-disable no-underscore-dangle */
 import { useEffect, useState } from 'react';
-import globals, { currentObserver } from './globals';
-import Model, { ModelMask } from './Model';
+import { Batch, currentObserver } from './globals';
+import Model from './Model';
 import Reaction from './reaction';
+import { MaskedModel } from './types';
 
-type MaskedModel<T> = Model<T> | ModelMask<T>; // 屏蔽无需暴露给用户的属性与方法
-
+/**
+ * !暴露给用户的API
+ */
 export function createModel<T>(target: T) {
 	return new Model(target) as MaskedModel<T>;
-}
-export function useMainDerivation<T>(
-	root_: MaskedModel<T>
-): [T, () => boolean] {
-	// eslint-disable-next-line @typescript-eslint/no-unused-vars
-	const [_, setFresh] = useState(false);
-	const root = root_ as Model<T>;
-	useEffect(() => {
-		root.mountMainDerivation(setFresh);
-		return () => {
-			root.freeze();
-		};
-	}, []);
-	return [root.proxy_ as unknown as T, root.freeze];
-}
-
-export function useNormalDerivation<T>(root_: MaskedModel<T>) {
-	const root = root_ as Model<T>;
-	// if (!root.hasMainStore()) {
-	// 	throw new Error('no main derivation');
-	// }
-	return root.proxy_ as unknown as T;
 }
 
 export function autorun(fn: () => void) {
@@ -43,7 +23,33 @@ export function autorun(fn: () => void) {
 }
 
 export function transaction(fn: () => void) {
-	globals.Batch++;
+	Batch.level++;
 	fn();
-	globals.Batch--;
+	Batch.level--;
+}
+
+export function useMainDerivation<T>(
+	root_: MaskedModel<T>
+): [T, () => boolean] {
+	// eslint-disable-next-line @typescript-eslint/no-unused-vars
+	// if (!root_.isMounted()) {
+	// 	throw Error('Main derivation has not mounted');
+	// }
+	const [_, setFresh] = useState(false);
+	const root = root_ as Model<T>;
+	useEffect(() => {
+		root.addFresh(setFresh);
+		return () => {
+			root.freeze();
+		};
+	}, []);
+	return [root.proxy_ as unknown as T, root.freeze];
+}
+
+export function useNormalDerivation<T>(root_: MaskedModel<T>) {
+	const root = root_ as Model<T>;
+	// if (!root.isMounted()) {
+	// 	throw new Error('no main derivation');
+	// }
+	return root.proxy_ as unknown as T;
 }

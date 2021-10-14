@@ -1,6 +1,8 @@
 import { getAdm } from './createStore';
 import Reaction from './reaction';
-
+/**
+ * !全局对象
+ */
 export let currentObserver = {
 	current: null as null | Reaction,
 	set(reaction: Reaction | null) {
@@ -11,16 +13,8 @@ export let currentObserver = {
 	}
 };
 
-let Batch = 0;
-let BatchId = {
-	id: null as any,
-	get() {
-		return this.id;
-	},
-	set(newId: any) {
-		this.id = newId;
-	}
-};
+// 事务的层数
+export let Batch = { level: 0 };
 export let batchQueue = {
 	id: null as any,
 	reactionQueue: new Set<Reaction>(),
@@ -44,5 +38,3 @@ export let batchQueue = {
 		}, 0);
 	}
 };
-const globals = { Batch, BatchId };
-export default globals;
