@@ -18,11 +18,10 @@ var Model = /** @class */ (function () {
     function Model(target) {
         var _this = this;
         this._batch = null;
-        this._hasMounted = false;
         this._observers = new Map();
         this._observables = new WeakMap();
-        this._hasMainDerivation = false;
         this._setFresh = function () { };
+        this._hasMainDerivation = false;
         this._isRevoked = false;
         this.target_ = target;
         getAdm(target).addNewModel(this);
@@ -85,9 +84,6 @@ var Model = /** @class */ (function () {
     };
     Model.prototype.isFrozen = function () {
         return this._isRevoked;
-    };
-    Model.prototype.isMounted = function () {
-        return Boolean(this._hasMounted);
     };
     Model.prototype.addFresh = function (setFresh) {
         if (this._hasMainDerivation) {

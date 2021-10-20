@@ -2,6 +2,16 @@
 import React from 'react';
 import Model from './Model';
 const adm = Symbol();
+interface IBox<T> {
+	get: () => T;
+	set: (v: T) => void;
+}
+
+interface IFactory {
+	<T>(target: T): T;
+	box: <T>(target: T) => IBox<T>;
+	array: <T>(target: T) => T;
+}
 class Administration<T> {
 	private freshMethods: Set<React.Dispatch<React.SetStateAction<boolean>>> =
 		new Set();
@@ -32,9 +42,28 @@ class Administration<T> {
 export function getAdm<T>(o: T): Administration<T> {
 	return (o as any)[adm];
 }
-export default function createStore<T>(target: T) {
+export function create<T>(target: T) {
 	Object.defineProperty(target, adm, {
 		value: new Administration(target)
 	});
 	return target;
 }
+
+const factory = {
+	box: function <T>(target: T) {
+		const o = {
+			value: target,
+			get() {
+				return target;
+			},
+			set(newValue: T) {
+				this.value = newValue;
+			}
+		};
+		return create(o as IBox<T>);
+	},
+	array: function <T>(target: T) {
+		return create(target);
+	}
+};
+export const createStore: IFactory = Object.assign(create, factory);

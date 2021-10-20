@@ -29,9 +29,27 @@ var Administration = /** @class */ (function () {
 export function getAdm(o) {
     return o[adm];
 }
-export default function createStore(target) {
+function create(target) {
     Object.defineProperty(target, adm, {
         value: new Administration(target)
     });
     return target;
 }
+var factory = {
+    box: function (target) {
+        var o = {
+            value: target,
+            get: function () {
+                return target;
+            },
+            set: function (newValue) {
+                this.value = newValue;
+            }
+        };
+        return create(o);
+    },
+    array: function (target) {
+        return create(target);
+    }
+};
+export default Object.assign(create, factory);

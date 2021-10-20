@@ -22,9 +22,12 @@ export function autorun(fn: () => void) {
 	currentObserver.set(prev);
 }
 
-export function transaction(fn: () => void) {
+export function transaction(fn: () => void, delay?: number) {
 	Batch.level++;
+	let prev = Batch.delay;
+	Batch.delay = delay ?? 0;
 	fn();
+	Batch.delay = prev;
 	Batch.level--;
 }
 
@@ -38,6 +41,9 @@ export function useMainDerivation<T>(
 	const [_, setFresh] = useState(false);
 	const root = root_ as Model<T>;
 	useEffect(() => {
+		// if (!root_.isMounted()) {
+		// 	throw Error('Main derivation has not mounted');
+		// }
 		root.addFresh(setFresh);
 		return () => {
 			root.freeze();

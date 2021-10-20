@@ -14,7 +14,7 @@ export let currentObserver = {
 };
 
 // 事务的层数
-export let Batch = { level: 0 };
+export let Batch = { level: 0, delay: 0 };
 export let batchQueue = {
 	id: null as any,
 	reactionQueue: new Set<Reaction>(),
@@ -25,7 +25,7 @@ export let batchQueue = {
 	addStore(store: any) {
 		this.storeQueue.add(store);
 	},
-	run() {
+	run(delay: number) {
 		if (this.id) {
 			clearTimeout(this.id);
 		}
@@ -35,6 +35,6 @@ export let batchQueue = {
 			this.storeQueue.forEach((s) => getAdm(s).fresh());
 			this.storeQueue.clear();
 			clearTimeout(this.id);
-		}, 0);
+		}, delay);
 	}
 };

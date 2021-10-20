@@ -10,23 +10,24 @@ var __assign = (this && this.__assign) || function () {
     return __assign.apply(this, arguments);
 };
 import { jsx as _jsx, jsxs as _jsxs } from "react/jsx-runtime";
-import { autorun, createModel, transaction, useMainDerivation, useNormalDerivation } from '../libs/api';
-import { counter as counterStore, person } from '../libs/store';
+import { arrayStore, counter as counterStore, person } from '../libs/store';
+import { autorun, createModel, transaction, useMainDerivation, useNormalDerivation } from '../libs/store-api';
 export function sleep(interval) {
     var start = Date.now();
     while (Date.now() - start <= interval * 1000) { }
 }
+var $array = createModel(arrayStore);
 var $counter = createModel(counterStore);
 var $person = createModel(person);
 autorun(function () {
     console.log($counter.value.count + ' ' + $person.value.child.age);
 });
-// root.autorun(() => {
-// 	console.log(root.value.count);
-// });
+autorun(function () {
+    console.log($array.value[1]);
+});
 export var Counter = function () {
     var _a = useMainDerivation($counter), counter = _a[0], freeze = _a[1];
-    var _b = useMainDerivation($person), jack = _b[0], presonFreeze = _b[1];
+    var _b = useMainDerivation($array), array = _b[0], arrayFreeze = _b[1];
     // const DoubleCounter = useMemo(
     // 	() => 2 * counterStore.count,
     // 	[counterStore.count]
@@ -40,8 +41,8 @@ export var Counter = function () {
                         counter.count++;
                     });
                 } }, { children: "+" }), void 0), _jsx("button", __assign({ onClick: function () {
-                    jack.child.age++;
-                } }, { children: "JackAdd" }), void 0), _jsx(A, {}, void 0)] }, void 0));
+                    array.shift();
+                } }, { children: "change" }), void 0), _jsx(A, {}, void 0)] }, void 0));
 };
 var A = function () {
     var counter = useNormalDerivation($counter);

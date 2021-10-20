@@ -25,7 +25,7 @@ export const observableHandler: any = {
 		}
 		// 若当前处于事务中，只收集要触发的observer
 		if (Batch.level) {
-			model.updateBatch(target, prop);
+			model.updateBatch(target, prop, Batch.delay);
 			return Reflect.set(target, prop, value, receiver);
 		}
 		// 普通的数据更新

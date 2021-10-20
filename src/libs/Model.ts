@@ -21,18 +21,22 @@ type Derivation = ProxyConstructor | null;
 
 export class Model<T> implements IModel {
 	proxy_: Derivation;
-	_batch: any = null;
-	private _hasMounted: boolean = false;
 	private target_: T | null;
+
+	_batch: any = null;
 	freeze: () => boolean;
+
 	private _observers: Map<Reaction, WeakMap<Object, Set<PropertyKey>>> =
 		new Map();
 	private _observables: WeakMap<Object, Map<PropertyKey, Set<Reaction>>> =
 		new WeakMap();
-	private _hasMainDerivation: boolean = false;
+
 	private _setFresh: React.Dispatch<React.SetStateAction<boolean>> | null =
 		() => {};
+
+	private _hasMainDerivation: boolean = false;
 	private _isRevoked: boolean = false;
+
 	constructor(target: T) {
 		this.target_ = target;
 		getAdm(target).addNewModel(this);
@@ -71,13 +75,13 @@ export class Model<T> implements IModel {
 		this._observables.get(target)?.get(prop)?.add(currentObserver.get()!);
 	}
 
-	updateBatch(target: any, prop: PropertyKey) {
+	updateBatch(target: any, prop: PropertyKey, delay: number) {
 		const set = this.findReaction(target, prop);
 		if (set) {
 			set.forEach((v) => batchQueue.addReaction(v));
 		}
 		batchQueue.addStore(this.target_);
-		batchQueue.run();
+		batchQueue.run(delay);
 	}
 	private clear() {
 		this._hasMainDerivation = false;
@@ -94,9 +98,6 @@ export class Model<T> implements IModel {
 	}
 	isFrozen() {
 		return this._isRevoked;
-	}
-	isMounted(): boolean {
-		return Boolean(this._hasMounted);
 	}
 
 	addFresh(setFresh: React.Dispatch<React.SetStateAction<boolean>>) {

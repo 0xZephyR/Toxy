@@ -31,6 +31,9 @@ export function useMainDerivation(root_) {
     var _a = useState(false), _ = _a[0], setFresh = _a[1];
     var root = root_;
     useEffect(function () {
+        // if (!root_.isMounted()) {
+        // 	throw Error('Main derivation has not mounted');
+        // }
         root.addFresh(setFresh);
         return function () {
             root.freeze();

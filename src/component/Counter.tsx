@@ -1,38 +1,41 @@
 // eslint-disable-next-line no-use-before-define
 import React from 'react';
 import {
+	arrayStore,
+	counter as counterStore,
+	personStore
+} from '../libs/store';
+import {
 	autorun,
 	createModel,
 	transaction,
 	useMainDerivation,
 	useNormalDerivation
-} from '../libs/api';
-import { counter as counterStore, person } from '../libs/store';
+} from '../libs/store-api';
 
 export function sleep(interval: number) {
 	const start = Date.now();
 	while (Date.now() - start <= interval * 1000) {}
 }
-
+const $array = createModel(arrayStore);
 const $counter = createModel(counterStore);
-const $person = createModel(person);
+const $person = createModel(personStore);
 autorun(() => {
 	console.log($counter.value.count + ' ' + $person.value.child.age);
 });
-
-// root.autorun(() => {
-// 	console.log(root.value.count);
-// });
-
+autorun(() => {
+	console.log($person.value.name);
+});
 export const Counter = () => {
 	const [counter, freeze] = useMainDerivation($counter);
-	const [jack, presonFreeze] = useMainDerivation($person);
+	const [person, personFreeze] = useMainDerivation($person);
+	//const componentA = useCallback(() => () => <A />, [person.child]);
 	// const DoubleCounter = useMemo(
 	// 	() => 2 * counterStore.count,
 	// 	[counterStore.count]
 	// );
 	return (
-		<div>
+		<>
 			{counter.count}
 			<button
 				onClick={() => {
@@ -47,15 +50,15 @@ export const Counter = () => {
 			>
 				+
 			</button>
-			<button
-				onClick={() => {
-					jack.child.age++;
+			<input
+				onChange={(e) => {
+					transaction(() => {
+						person.name = e.currentTarget.value;
+					}, 200);
 				}}
-			>
-				JackAdd
-			</button>
+			/>
 			<A />
-		</div>
+		</>
 	);
 };
 
