@@ -2,6 +2,7 @@
 /* eslint-disable react-hooks/exhaustive-deps */
 /* eslint-disable no-underscore-dangle */
 import { useEffect, useState } from 'react';
+import { createStore } from './createStore';
 import { Batch, currentObserver } from './globals';
 import Model from './Model';
 import Reaction from './reaction';
@@ -18,9 +19,12 @@ export function autorun(fn) {
     fn();
     currentObserver.set(prev);
 }
-export function transaction(fn) {
+export function transaction(fn, delay) {
     Batch.level++;
+    var prev = Batch.delay;
+    Batch.delay = delay !== null && delay !== void 0 ? delay : 0;
     fn();
+    Batch.delay = prev;
     Batch.level--;
 }
 export function useMainDerivation(root_) {
@@ -28,7 +32,7 @@ export function useMainDerivation(root_) {
     // if (!root_.isMounted()) {
     // 	throw Error('Main derivation has not mounted');
     // }
-    var _a = useState(false), _ = _a[0], setFresh = _a[1];
+    var _a = useState(false), setFresh = _a[1];
     var root = root_;
     useEffect(function () {
         // if (!root_.isMounted()) {
@@ -48,3 +52,4 @@ export function useNormalDerivation(root_) {
     // }
     return root.proxy_;
 }
+export default createStore;

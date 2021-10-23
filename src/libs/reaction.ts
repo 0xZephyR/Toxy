@@ -8,7 +8,7 @@ export default class Reaction implements IReaction {
 		this.reaction = reaction;
 	}
 
-	runreaction() {
+	runReaction() {
 		this.reaction();
 	}
 }
@@ -16,7 +16,7 @@ export default class Reaction implements IReaction {
 export class Batch extends Reaction {
 	private timeOutId: any = null;
 
-	runreaction() {
+	runReaction() {
 		if (this.timeOutId) {
 			clearTimeout(this.timeOutId);
 		}

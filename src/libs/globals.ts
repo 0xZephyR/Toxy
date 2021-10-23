@@ -30,7 +30,7 @@ export let batchQueue = {
 			clearTimeout(this.id);
 		}
 		this.id = setTimeout(() => {
-			this.reactionQueue.forEach((r) => r.runreaction());
+			this.reactionQueue.forEach((r) => r.runReaction());
 			this.reactionQueue.clear();
 			this.storeQueue.forEach((s) => getAdm(s).fresh());
 			this.storeQueue.clear();

@@ -9,30 +9,36 @@ var __assign = (this && this.__assign) || function () {
     };
     return __assign.apply(this, arguments);
 };
-import { jsx as _jsx, jsxs as _jsxs } from "react/jsx-runtime";
-import { arrayStore, counter as counterStore, person } from '../libs/store';
+import { jsx as _jsx, Fragment as _Fragment, jsxs as _jsxs } from "react/jsx-runtime";
+// eslint-disable-next-line no-use-before-define
+import { useEffect } from 'react';
+import { arrayStore, counter as counterStore, personStore } from '../libs/store';
 import { autorun, createModel, transaction, useMainDerivation, useNormalDerivation } from '../libs/store-api';
-export function sleep(interval) {
-    var start = Date.now();
-    while (Date.now() - start <= interval * 1000) { }
-}
 var $array = createModel(arrayStore);
 var $counter = createModel(counterStore);
-var $person = createModel(person);
+var $person = createModel(personStore);
 autorun(function () {
     console.log($counter.value.count + ' ' + $person.value.child.age);
 });
 autorun(function () {
-    console.log($array.value[1]);
+    console.log($person.value.name);
 });
 export var Counter = function () {
     var _a = useMainDerivation($counter), counter = _a[0], freeze = _a[1];
-    var _b = useMainDerivation($array), array = _b[0], arrayFreeze = _b[1];
+    var _b = useMainDerivation($person), person = _b[0], personFreeze = _b[1];
+    useEffect(function () {
+        var handleHash = function () { return console.log('hashchange'); };
+        window.addEventListener('hashchange', handleHash);
+        return function () {
+            window.removeEventListener('hashchange', handleHash);
+        };
+    }, []);
+    //const componentA = useCallback(() => () => <A />, [person.child]);
     // const DoubleCounter = useMemo(
     // 	() => 2 * counterStore.count,
     // 	[counterStore.count]
     // );
-    return (_jsxs("div", { children: [counter.count, _jsx("button", __assign({ onClick: function () {
+    return (_jsxs(_Fragment, { children: [_jsx("a", __assign({ href: '#test' }, { children: "hash" }), void 0), counter.count, _jsx("button", __assign({ onClick: function () {
                     transaction(function () {
                         transaction(function () {
                             counter.count++;
@@ -40,23 +46,30 @@ export var Counter = function () {
                         });
                         counter.count++;
                     });
-                } }, { children: "+" }), void 0), _jsx("button", __assign({ onClick: function () {
-                    array.shift();
-                } }, { children: "change" }), void 0), _jsx(A, {}, void 0)] }, void 0));
+                } }, { children: "+" }), void 0), _jsx("input", { value: person.name, onChange: function (e) {
+                    transaction(function () {
+                        person.name = e.currentTarget.value;
+                    }, 0);
+                } }, void 0), _jsx(A, {}, void 0)] }, void 0));
 };
 var A = function () {
     var counter = useNormalDerivation($counter);
-    return _jsx("div", { children: counter.count }, void 0);
+    var person = useNormalDerivation($person);
+    return (_jsxs("div", { children: [counter.count, _jsx("input", { value: person.name, onChange: function (e) {
+                    transaction(function () {
+                        person.name = e.currentTarget.value;
+                    }, 0);
+                } }, void 0)] }, void 0));
 };
 var rootA = createModel(counterStore);
+var $personA = createModel(personStore);
 export var Another = function () {
     var _a = useMainDerivation(rootA), counter = _a[0], revoke = _a[1];
+    var _b = useMainDerivation($personA), person = _b[0], personFreeze = _b[1];
     return (_jsxs("div", { children: [counter.count, _jsx("button", __assign({ onClick: function () {
                     for (var i = 0; i < 1; ++i) {
                         counter.count++;
                         //console.log('change');
                     }
-                } }, { children: "+" }), void 0), _jsx("button", __assign({ onClick: function () {
-                    revoke();
-                } }, { children: "revoke" }), void 0)] }, void 0));
+                } }, { children: "+" }), void 0), _jsx("div", { children: _jsx("input", { value: person.name }, void 0) }, void 0)] }, void 0));
 };

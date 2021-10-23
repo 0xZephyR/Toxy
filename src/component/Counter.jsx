@@ -1,5 +1,5 @@
 // eslint-disable-next-line no-use-before-define
-import React from 'react';
+import React, { useEffect } from 'react';
 import {
 	arrayStore,
 	counter as counterStore,
@@ -12,11 +12,6 @@ import {
 	useMainDerivation,
 	useNormalDerivation
 } from '../libs/store-api';
-
-export function sleep(interval: number) {
-	const start = Date.now();
-	while (Date.now() - start <= interval * 1000) {}
-}
 const $array = createModel(arrayStore);
 const $counter = createModel(counterStore);
 const $person = createModel(personStore);
@@ -29,6 +24,13 @@ autorun(() => {
 export const Counter = () => {
 	const [counter, freeze] = useMainDerivation($counter);
 	const [person, personFreeze] = useMainDerivation($person);
+	useEffect(() => {
+		const handleHash = ()=>console.log('hashchange');
+		window.addEventListener('hashchange', handleHash);
+		return () => {
+			window.removeEventListener('hashchange', handleHash);
+		};
+	}, []);
 	//const componentA = useCallback(() => () => <A />, [person.child]);
 	// const DoubleCounter = useMemo(
 	// 	() => 2 * counterStore.count,
@@ -36,6 +38,7 @@ export const Counter = () => {
 	// );
 	return (
 		<>
+			<a href='#test'>hash</a>
 			{counter.count}
 			<button
 				onClick={() => {
@@ -51,25 +54,37 @@ export const Counter = () => {
 				+
 			</button>
 			<input
+				value={person.name}
 				onChange={(e) => {
 					transaction(() => {
 						person.name = e.currentTarget.value;
-					}, 200);
+					}, 0);
 				}}
 			/>
 			<A />
 		</>
 	);
 };
-
 const A = () => {
 	const counter = useNormalDerivation($counter);
-	return <div>{counter.count}</div>;
+	const person = useNormalDerivation($person);
+	return (
+		<div>
+			{counter.count}
+			<input value={person.name} onChange={(e) => {
+				transaction(() => {
+					person.name = e.currentTarget.value;
+				}, 0);
+			}}/>
+		</div>
+	);
 };
 
 const rootA = createModel(counterStore);
+const $personA = createModel(personStore);
 export const Another = () => {
 	const [counter, revoke] = useMainDerivation(rootA);
+	const [person, personFreeze] = useMainDerivation($personA);
 	return (
 		<div>
 			{counter.count}
@@ -83,13 +98,9 @@ export const Another = () => {
 			>
 				+
 			</button>
-			<button
-				onClick={() => {
-					revoke();
-				}}
-			>
-				revoke
-			</button>
+			<div>
+				<input value={person.name} />
+			</div>
 		</div>
 	);
 };

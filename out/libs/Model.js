@@ -61,13 +61,13 @@ var Model = /** @class */ (function () {
         }
         (_d = (_c = this._observables.get(target)) === null || _c === void 0 ? void 0 : _c.get(prop)) === null || _d === void 0 ? void 0 : _d.add(currentObserver.get());
     };
-    Model.prototype.updateBatch = function (target, prop) {
+    Model.prototype.updateBatch = function (target, prop, delay) {
         var set = this.findReaction(target, prop);
         if (set) {
             set.forEach(function (v) { return batchQueue.addReaction(v); });
         }
         batchQueue.addStore(this.target_);
-        batchQueue.run();
+        batchQueue.run(delay);
     };
     Model.prototype.clear = function () {
         this._hasMainDerivation = false;
@@ -98,7 +98,7 @@ var Model = /** @class */ (function () {
     Model.prototype.runObservers = function (target, prop) {
         var _a, _b;
         (_b = (_a = this._observables
-            .get(target)) === null || _a === void 0 ? void 0 : _a.get(prop)) === null || _b === void 0 ? void 0 : _b.forEach(function (value) { return value.runreaction(); });
+            .get(target)) === null || _a === void 0 ? void 0 : _a.get(prop)) === null || _b === void 0 ? void 0 : _b.forEach(function (value) { return value.runReaction(); });
     };
     Model.prototype.findReaction = function (target, prop) {
         var _a;

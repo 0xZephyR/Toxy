@@ -18,7 +18,7 @@ var Reaction = /** @class */ (function () {
         this.reaction = function () { };
         this.reaction = reaction;
     }
-    Reaction.prototype.runreaction = function () {
+    Reaction.prototype.runReaction = function () {
         this.reaction();
     };
     return Reaction;
@@ -31,7 +31,7 @@ var Batch = /** @class */ (function (_super) {
         _this.timeOutId = null;
         return _this;
     }
-    Batch.prototype.runreaction = function () {
+    Batch.prototype.runReaction = function () {
         var _this = this;
         if (this.timeOutId) {
             clearTimeout(this.timeOutId);

@@ -12,7 +12,7 @@ export var currentObserver = {
     }
 };
 // 事务的层数
-export var Batch = { level: 0 };
+export var Batch = { level: 0, delay: 0 };
 export var batchQueue = {
     id: null,
     reactionQueue: new Set(),
@@ -23,17 +23,17 @@ export var batchQueue = {
     addStore: function (store) {
         this.storeQueue.add(store);
     },
-    run: function () {
+    run: function (delay) {
         var _this = this;
         if (this.id) {
             clearTimeout(this.id);
         }
         this.id = setTimeout(function () {
-            _this.reactionQueue.forEach(function (r) { return r.runreaction(); });
+            _this.reactionQueue.forEach(function (r) { return r.runReaction(); });
             _this.reactionQueue.clear();
             _this.storeQueue.forEach(function (s) { return getAdm(s).fresh(); });
             _this.storeQueue.clear();
             clearTimeout(_this.id);
-        }, 0);
+        }, delay);
     }
 };

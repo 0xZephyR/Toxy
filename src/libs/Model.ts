@@ -18,7 +18,6 @@ export interface ModelMask<T> {
 // 每个共享状态的组件树的根store
 
 type Derivation = ProxyConstructor | null;
-
 export class Model<T> implements IModel {
 	proxy_: Derivation;
 	private target_: T | null;
@@ -36,7 +35,6 @@ export class Model<T> implements IModel {
 
 	private _hasMainDerivation: boolean = false;
 	private _isRevoked: boolean = false;
-
 	constructor(target: T) {
 		this.target_ = target;
 		getAdm(target).addNewModel(this);
@@ -113,7 +111,7 @@ export class Model<T> implements IModel {
 		this._observables
 			.get(target)
 			?.get(prop)
-			?.forEach((value) => value.runreaction());
+			?.forEach((value) => value.runReaction());
 	}
 	findReaction(target: any, prop: any) {
 		return this._observables.get(target)?.get(prop);

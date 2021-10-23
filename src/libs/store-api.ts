@@ -2,11 +2,11 @@
 /* eslint-disable react-hooks/exhaustive-deps */
 /* eslint-disable no-underscore-dangle */
 import { useEffect, useState } from 'react';
+import { createStore } from './createStore';
 import { Batch, currentObserver } from './globals';
 import Model from './Model';
 import Reaction from './reaction';
 import { MaskedModel } from './types';
-
 /**
  * !暴露给用户的API
  */
@@ -38,7 +38,7 @@ export function useMainDerivation<T>(
 	// if (!root_.isMounted()) {
 	// 	throw Error('Main derivation has not mounted');
 	// }
-	const [_, setFresh] = useState(false);
+	const [, setFresh] = useState(false);
 	const root = root_ as Model<T>;
 	useEffect(() => {
 		// if (!root_.isMounted()) {
@@ -59,3 +59,5 @@ export function useNormalDerivation<T>(root_: MaskedModel<T>) {
 	// }
 	return root.proxy_ as unknown as T;
 }
+
+export default createStore;

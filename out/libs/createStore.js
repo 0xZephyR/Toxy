@@ -29,7 +29,7 @@ var Administration = /** @class */ (function () {
 export function getAdm(o) {
     return o[adm];
 }
-function create(target) {
+export function create(target) {
     Object.defineProperty(target, adm, {
         value: new Administration(target)
     });
@@ -52,4 +52,4 @@ var factory = {
         return create(target);
     }
 };
-export default Object.assign(create, factory);
+export var createStore = Object.assign(create, factory);
