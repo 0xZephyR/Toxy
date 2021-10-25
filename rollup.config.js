@@ -19,13 +19,13 @@ const rollupConfig = {
 	output: [
 		// 输出 commonjs 规范的代码
 		{
-			file: path.join(paths.output, 'index.js'),
+			file: './index.js',
 			format: 'cjs',
 			name: pkg.name
 		},
 		// 输出 es 规范的代码
 		{
-			file: path.join(paths.output, 'index.esm.js'),
+			file: './index.esm.js',
 			format: 'es',
 			name: pkg.name
 		}

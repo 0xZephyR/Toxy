@@ -1,7 +1,7 @@
 {
-	"name": "toxy",
-	"version": "0.1.0",
-	"private": true,
+	"name": "troxy",
+	"version": "0.1.2",
+	"private": false,
 	"dependencies": {
 		"@testing-library/jest-dom": "^5.11.4",
 		"@testing-library/react": "^11.1.0",
@@ -43,8 +43,10 @@
 	},
 	"devDependencies": {
 		"@babel/preset-env": "^7.15.8",
+		"@material-ui/core": "^4.12.3",
 		"@rollup/plugin-node-resolve": "^13.0.6",
 		"@types/react": "^17.0.27",
+		"material-ui": "^0.20.2",
 		"rollup": "^2.58.0",
 		"rollup-plugin-babel": "^4.4.0",
 		"rollup-plugin-commonjs": "^10.1.0",

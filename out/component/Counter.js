@@ -14,6 +14,7 @@ import { jsx as _jsx, Fragment as _Fragment, jsxs as _jsxs } from "react/jsx-run
 import { useEffect } from 'react';
 import { arrayStore, counter as counterStore, personStore } from '../libs/store';
 import { autorun, createModel, transaction, useMainDerivation, useNormalDerivation } from '../libs/store-api';
+import { Input } from './Input';
 var $array = createModel(arrayStore);
 var $counter = createModel(counterStore);
 var $person = createModel(personStore);
@@ -38,7 +39,7 @@ export var Counter = function () {
     // 	() => 2 * counterStore.count,
     // 	[counterStore.count]
     // );
-    return (_jsxs(_Fragment, { children: [_jsx("a", __assign({ href: '#test' }, { children: "hash" }), void 0), counter.count, _jsx("button", __assign({ onClick: function () {
+    return (_jsxs(_Fragment, { children: [_jsx("a", __assign({ href: "#test" }, { children: "hash" }), void 0), counter.count, _jsx("button", __assign({ onClick: function () {
                     transaction(function () {
                         transaction(function () {
                             counter.count++;
@@ -46,20 +47,12 @@ export var Counter = function () {
                         });
                         counter.count++;
                     });
-                } }, { children: "+" }), void 0), _jsx("input", { value: person.name, onChange: function (e) {
-                    transaction(function () {
-                        person.name = e.currentTarget.value;
-                    }, 0);
-                } }, void 0), _jsx(A, {}, void 0)] }, void 0));
+                } }, { children: "+" }), void 0), _jsx(Input, { bind: person.name }, void 0), _jsx(A, {}, void 0)] }, void 0));
 };
 var A = function () {
     var counter = useNormalDerivation($counter);
     var person = useNormalDerivation($person);
-    return (_jsxs("div", { children: [counter.count, _jsx("input", { value: person.name, onChange: function (e) {
-                    transaction(function () {
-                        person.name = e.currentTarget.value;
-                    }, 0);
-                } }, void 0)] }, void 0));
+    return (_jsxs("div", { children: [counter.count, _jsx(Input, { bind: person.name }, void 0)] }, void 0));
 };
 var rootA = createModel(counterStore);
 var $personA = createModel(personStore);
@@ -71,5 +64,5 @@ export var Another = function () {
                         counter.count++;
                         //console.log('change');
                     }
-                } }, { children: "+" }), void 0), _jsx("div", { children: _jsx("input", { value: person.name }, void 0) }, void 0)] }, void 0));
+                } }, { children: "+" }), void 0), _jsx("div", { children: _jsx(Input, { bind: person.name }, void 0) }, void 0)] }, void 0));
 };

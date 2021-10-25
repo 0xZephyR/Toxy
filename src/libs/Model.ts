@@ -5,23 +5,21 @@ import { getAdm } from './createStore';
 import { batchQueue, currentObserver } from './globals';
 import { observableHandler, toDeepProxy } from './observable';
 import Reaction from './reaction';
+import { MaskedModel } from './types';
 interface IModel {
 	proxy_: ProxyConstructor | null;
 	freeze: (setFresh: React.Dispatch<React.SetStateAction<boolean>>) => void;
 }
 export let globalDerivation: any = null;
 export let globalAutorun: (() => void) | null = null;
-export interface ModelMask<T> {
-	value: T;
-	isMounted: () => boolean;
-}
-// 每个共享状态的组件树的根store
 
+// 每个共享状态的组件树的根store
+const target_ = Symbol();
 type Derivation = ProxyConstructor | null;
 export class Model<T> implements IModel {
 	proxy_: Derivation;
 	private target_: T | null;
-
+	model: MaskedModel<T>;
 	_batch: any = null;
 	freeze: () => boolean;
 
@@ -49,6 +47,12 @@ export class Model<T> implements IModel {
 			}, 0);
 			return true;
 		};
+		this.model = { value: this.proxy_ as unknown as T };
+		Object.defineProperty(this.model, 'target_', {
+			configurable: true,
+			writable: false,
+			value: this
+		});
 	}
 	reportNewObserver(prop: PropertyKey, target: Object) {
 		this.updateObserver(prop, target);

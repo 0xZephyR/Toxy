@@ -11,7 +11,7 @@ import { MaskedModel } from './types';
  * !暴露给用户的API
  */
 export function createModel<T>(target: T) {
-	return new Model(target) as MaskedModel<T>;
+	return new Model(target).model;
 }
 
 export function autorun(fn: () => void) {
@@ -39,7 +39,7 @@ export function useMainDerivation<T>(
 	// 	throw Error('Main derivation has not mounted');
 	// }
 	const [, setFresh] = useState(false);
-	const root = root_ as Model<T>;
+	const root = (root_ as any).target_;
 	useEffect(() => {
 		// if (!root_.isMounted()) {
 		// 	throw Error('Main derivation has not mounted');
@@ -53,7 +53,7 @@ export function useMainDerivation<T>(
 }
 
 export function useNormalDerivation<T>(root_: MaskedModel<T>) {
-	const root = root_ as Model<T>;
+	const root = (root_ as any).target_;
 	// if (!root.isMounted()) {
 	// 	throw new Error('no main derivation');
 	// }

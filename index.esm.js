@@ -2526,9 +2526,7 @@ react.version;
 
 var adm = Symbol();
 
-var Administration =
-/** @class */
-function () {
+var Administration = function () {
   function Administration(target) {
     this.freshMethods = new Set();
     this._derivedModels = new Set();
@@ -2668,13 +2666,11 @@ PERFORMANCE OF THIS SOFTWARE.
 var extendStatics = function(d, b) {
     extendStatics = Object.setPrototypeOf ||
         ({ __proto__: [] } instanceof Array && function (d, b) { d.__proto__ = b; }) ||
-        function (d, b) { for (var p in b) if (Object.prototype.hasOwnProperty.call(b, p)) d[p] = b[p]; };
+        function (d, b) { for (var p in b) if (b.hasOwnProperty(p)) d[p] = b[p]; };
     return extendStatics(d, b);
 };
 
 function __extends(d, b) {
-    if (typeof b !== "function" && b !== null)
-        throw new TypeError("Class extends value " + String(b) + " is not a constructor or null");
     extendStatics(d, b);
     function __() { this.constructor = d; }
     d.prototype = b === null ? Object.create(b) : (__.prototype = b.prototype, new __());
@@ -2783,9 +2779,7 @@ function toDeepProxy(object_, handler_) {
   }
 }
 
-var Model =
-/** @class */
-function () {
+var Model = function () {
   function Model(target) {
     var _this = this;
 
@@ -2932,9 +2926,7 @@ function () {
   return Model;
 }();
 
-var Reaction =
-/** @class */
-function () {
+var Reaction = function () {
   function Reaction(reaction) {
     this.reaction = function () {};
 
@@ -2948,7 +2940,6 @@ function () {
   return Reaction;
 }();
 
-/** @class */
 (function (_super) {
   __extends(Batch, _super);
 
